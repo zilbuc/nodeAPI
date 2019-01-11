@@ -5,12 +5,35 @@
 
 //Dependencies
 const http = require('http');
+const https = require('https');
 const url = require('url');
-const StringDecoder = require('string_decoder').StringDecoder;  // used to get the payload
+const StringDecoder = require('string_decoder').StringDecoder;  // is used to get the payload
+const config = require('./config');
+const fs = require('fs'); // file system module
 
-// The server should respond with a string
-const server = http.createServer((req, res) => {
+// Instantiate the HTTP server
+const httpServer = http.createServer((req, res) => {
+  unifiedServer(req, res);
+});
 
+// Start the http server (...and have it listen on port 3000 or config.httpPort)
+httpServer.listen(config.httpPort, () => console.log('The server is listening on port '+config.httpPort) );
+
+// Instantiate the HTTPS server; cert.pem and key.pem have to be read synchronously for that
+const httpsServerOptions = {
+  'key' : fs.readFileSync('./https/key.pem'),
+  'cert' : fs.readFileSync('./https/cert.pem')
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+
+});
+
+// Start the HTTPS server
+httpsServer.listen(config.httpsPort, () => console.log('The server is listening on port '+config.httpsPort) );
+
+
+// Unified server - server logic for both http and https servers; The server should respond with a string;
+const unifiedServer = (req, res) => {
   // Get the URL and parse it
   let parsedUrl = url.parse(req.url, true);  // `true` calls query module; this allows parsedUrl.query
 
@@ -56,10 +79,11 @@ const server = http.createServer((req, res) => {
       // Use the payload called back by the handler or default to an empty object
       payload = typeof(payload) == 'object' ? payload : {};
 
-      // Convert the payload to a string
+      // Convert the payload to a JSON string
       let payloadString = JSON.stringify(payload);
 
       // Return the response
+      res.setHeader('Content-Type', 'application/json'); // tells browser that we're sending JSON
       res.writeHead(statusCode);
       res.end(payloadString);
 
@@ -74,10 +98,7 @@ const server = http.createServer((req, res) => {
     // console.log('Request received with this payload: ', buffer);
 
   });
-});
-
-// Start the server and have it listen on port 3000
-server.listen(3000, () => console.log('The server is listening on port 3000 now') );
+};
 
 // Define the handlers
 let handlers = {};
