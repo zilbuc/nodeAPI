@@ -11,6 +11,22 @@ const StringDecoder = require('string_decoder').StringDecoder;  // is used to ge
 const config = require('./config');
 const fs = require('fs'); // file system module
 
+// Testing CRUD:
+// var _data = require('./lib/data');
+// TESTING @TODO delete this
+// _data.create('test', 'newFile', {'foo' : 'bar'}, (err) => {
+//   console.log('this was the error:', err);
+// });
+// _data.read('test', 'newFile', (err, data) => {
+//   console.log('this was the error:', err, '\n', 'this was the data:', data);
+// });
+// _data.update('test', 'newFile', {'fizz' : 'buzz'}, (err) => {
+//   console.log('this was the error:', err);
+// });
+// _data.delete('test', 'newFile', (err) => {
+//   console.log('this was the error:', err);
+// });
+
 // Instantiate the HTTP server
 const httpServer = http.createServer((req, res) => {
   unifiedServer(req, res);
@@ -103,10 +119,10 @@ const unifiedServer = (req, res) => {
 // Define the handlers
 let handlers = {};
 
-// Sample handler
-handlers.sample = (data, callback) => {
+// Ping handler
+handlers.ping = (data, callback) => {
   // Callback a http status code and a payload object
-  callback(406, {'name' : 'sample handler'})
+  callback(200);
 };
 
 // 'Not found' handler
@@ -116,5 +132,6 @@ handlers.notFound = (data, callback) => {
 
 // Define a request router
 let router = {
-  'sample' : handlers.sample
+  'sample' : handlers.sample,
+  'ping' : handlers.ping
 };
