@@ -43,7 +43,7 @@ const httpsServerOptions = {
   'cert' : fs.readFileSync('./https/cert.pem')
 };
 const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
-
+ // @TODO - check if this is ok
 });
 
 // Start the HTTPS server
@@ -122,5 +122,6 @@ const unifiedServer = (req, res) => {
 let router = {
   'ping' : handlers.ping,
   'users' : handlers.users,
-  'tokens' : handlers.tokens
+  'tokens' : handlers.tokens,
+  'checks' : handlers.checks
 };
