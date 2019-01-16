@@ -29,6 +29,11 @@ const helpers = require('./lib/helpers');
 //   console.log('this was the error:', err);
 // });
 
+// Testing Twilio:
+// helpers.sendTwilioSms('4158375309', 'Hello!', (err) => {
+//   console.log('This was the error: ', err);
+// });
+
 // Instantiate the HTTP server
 const httpServer = http.createServer((req, res) => {
   unifiedServer(req, res);
@@ -43,7 +48,7 @@ const httpsServerOptions = {
   'cert' : fs.readFileSync('./https/cert.pem')
 };
 const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
- // @TODO - check if this is ok
+  unifiedServer(req, res);
 });
 
 // Start the HTTPS server
@@ -98,7 +103,7 @@ const unifiedServer = (req, res) => {
       payload = typeof(payload) == 'object' ? payload : {};
 
       // Convert the payload to a JSON string
-      let payloadString = JSON.stringify(payload);
+      const payloadString = JSON.stringify(payload);
 
       // Return the response
       res.setHeader('Content-Type', 'application/json'); // tells browser that we're sending JSON
