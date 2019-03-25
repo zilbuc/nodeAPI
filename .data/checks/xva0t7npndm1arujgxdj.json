@@ -1,11 +1,1 @@
-{
-  "id": "xva0t7npndm1arujgxdj",
-  "userPhone": "5551234567",
-  "protocol": "https",
-  "url": "yahoo.com",
-  "method": "get",
-  "successCodes": [200, 201, 301, 302],
-  "timeoutSeconds": 3,
-  "state": "up",
-  "lastChecked": 1553465010425
-}
+{"id":"xva0t7npndm1arujgxdj","userPhone":"5551234567","protocol":"https","url":"yahoo.com","method":"get","successCodes":[200,201,301,302],"timeoutSeconds":3,"state":"up","lastChecked":1553535794667}
