@@ -15,68 +15,69 @@ app.config = {
 app.client = {};
 
 // Interface for making API calls
-app.client.request = (headers, path, method, queryStringObject, payload, callback) => {
+app.client.request = function(headers,path,method,queryStringObject,payload,callback){
 
-  // Set the defaults
-  headers = typeof(headers) === 'object' && headers !== null ? headers : {};
-  path = typeof(path) === 'string' ? path : '/';
-  method = typeof(method) === 'string' && ['POST', 'GET', 'PUT', 'DELETE'].indexOf(method) > -1 ? method.toUpperCase() : 'GET';
-  queryStringObject = typeof(queryStringObject) === 'object' && queryStringObject !== null ? queryStringObject : {};
-  payload = typeof(payload) === 'object' && payload !== null ? payload : {};
-  callback = typeof(callback) === 'function' ? callback : false; // to allow making requests without callback
+  // Set defaults
+  headers = typeof(headers) == 'object' && headers !== null ? headers : {};
+  path = typeof(path) == 'string' ? path : '/';
+  method = typeof(method) == 'string' && ['POST','GET','PUT','DELETE'].indexOf(method.toUpperCase()) > -1 ? method.toUpperCase() : 'GET';
+  queryStringObject = typeof(queryStringObject) == 'object' && queryStringObject !== null ? queryStringObject : {};
+  payload = typeof(payload) == 'object' && payload !== null ? payload : {};
+  callback = typeof(callback) == 'function' ? callback : false;
 
   // For each query string parameter sent, add it to the path
-  let requestUrl = path+'?';
-  let counter = 0;
-  for (let queryKey in queryStringObject) {
-    if (queryStringObject.hasOwnProperty(queryKey)) {
-      counter++;
-      // If at least one query string parameter has already been added, prepend new ones with an ampersand
-      if (counter > 1) {
-        requestURL+='&';
-      }
-      // Add the key value
-      requestUrl+=queryKey+'='+queryStringObject[queryKey];
-    }
+  var requestUrl = path+'?';
+  var counter = 0;
+  for(var queryKey in queryStringObject){
+     if(queryStringObject.hasOwnProperty(queryKey)){
+       counter++;
+       // If at least one query string parameter has already been added, preprend new ones with an ampersand
+       if(counter > 1){
+         requestUrl+='&';
+       }
+       // Add the key and value
+       requestUrl+=queryKey+'='+queryStringObject[queryKey];
+     }
   }
 
-  // Form the HTTP request as a JSON type
-  const xhr = new XMLHttpRequest();
+  // Form the http request as a JSON type
+  var xhr = new XMLHttpRequest();
   xhr.open(method, requestUrl, true);
-  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("Content-type", "application/json");
 
   // For each header sent, add it to the request
-  for (let headerKey in headers) {
-    if (headers.hasOwnProperty(headerKey)) {
-      xhr.setRequestHeader(headerKey, headers[headerKey]);
-    }
+  for(var headerKey in headers){
+     if(headers.hasOwnProperty(headerKey)){
+       xhr.setRequestHeader(headerKey, headers[headerKey]);
+     }
   }
 
   // If there is a current session token set, add that as a header
-  if (app.config.sessionToken) {
+  if(app.config.sessionToken){
     xhr.setRequestHeader("token", app.config.sessionToken.id);
   }
 
   // When the request comes back, handle the response
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      const statusCode = xhr.status;
-      const responseReturned = xhr.responseText;
+  xhr.onreadystatechange = function() {
+      if(xhr.readyState == XMLHttpRequest.DONE) {
+        var statusCode = xhr.status;
+        var responseReturned = xhr.responseText;
 
-      // Callback if requested
-      if (callback) {
-        try {
-          const parsedResponse = JSON.parse(responseReturned);
-          callback(statusCode, parsedResponse);
-        } catch(e) {
-          callback(statusCode, false);
+        // Callback if requested
+        if(callback){
+          try{
+            var parsedResponse = JSON.parse(responseReturned);
+            callback(statusCode,parsedResponse);
+          } catch(e){
+            callback(statusCode,false);
+          }
+
         }
       }
-    }
   }
 
-  // Set the payload as JSON
-  const payloadString = JSON.stringify(payload);
+  // Send the payload as JSON
+  var payloadString = JSON.stringify(payload);
   xhr.send(payloadString);
 
 };
@@ -97,7 +98,10 @@ app.bindLogoutButton = function(){
 };
 
 // Log the user out then redirect them
-app.logUserOut = function(){
+app.logUserOut = function(redirectUser){
+  // Set redirectUser to default to true
+  redirectUser = typeof(redirectUser) == 'boolean' ? redirectUser : true;
+
   // Get the current token id
   var tokenId = typeof(app.config.sessionToken.id) == 'string' ? app.config.sessionToken.id : false;
 
@@ -110,7 +114,9 @@ app.logUserOut = function(){
     app.setSessionToken(false);
 
     // Send the user to the logged out page
-    window.location = '/session/deleted';
+    if(redirectUser){
+      window.location = '/session/deleted';
+    }
 
   });
 };
@@ -143,7 +149,7 @@ app.bindForms = function(){
         var elements = this.elements;
         for(var i = 0; i < elements.length; i++){
           if(elements[i].type !== 'submit'){
-            var valueOfElement = elements[i].type === 'checkbox' ? elements[i].checked : elements[i].value;
+            var valueOfElement = elements[i].type == 'checkbox' ? elements[i].checked : elements[i].value;
             if(elements[i].name == '_method'){
               method = valueOfElement;
             } else {
@@ -153,8 +159,11 @@ app.bindForms = function(){
           }
         }
 
+        // If the method is DELETE, the payload should be a queryStringObject instead
+        var queryStringObject = method == 'DELETE' ? payload : {};
+
         // Call the API
-        app.client.request(undefined,path,method,undefined,payload,function(statusCode,responsePayload){
+        app.client.request(undefined,path,method,queryStringObject,payload,function(statusCode,responsePayload){
           // Display an error on the form if needed
           if(statusCode !== 200){
 
@@ -165,7 +174,7 @@ app.bindForms = function(){
             } else {
 
               // Try to get the error from the api, or set a default error message
-              var error = typeof(responsePayload.Error) === 'string' ? responsePayload.Error : 'An error has occured, please try again';
+              var error = typeof(responsePayload.Error) == 'string' ? responsePayload.Error : 'An error has occured, please try again';
 
               // Set the formError field with the error text
               document.querySelector("#"+formId+" .formError").innerHTML = error;
@@ -222,6 +231,12 @@ app.formResponseProcessor = function(formId,requestPayload,responsePayload){
   var formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
   if(formsWithSuccessMessages.indexOf(formId) > -1){
     document.querySelector("#"+formId+" .formSuccess").style.display = 'block';
+  }
+
+  // If the user just deleted their account, redirect them to the account-delete page
+  if(formId == 'accountEdit3'){
+    app.logUserOut(false);
+    window.location = '/account/deleted';
   }
 
 };
@@ -302,25 +317,14 @@ app.renewToken = function(callback){
   }
 };
 
-// Loop to renew token often
-app.tokenRenewalLoop = function(){
-  setInterval(function(){
-    app.renewToken(function(err){
-      if(!err){
-        console.log("Token renewed successfully @ "+Date.now());
-      }
-    });
-  },1000 * 60);
-};
-
 // Load data on the page
 app.loadDataOnPage = function(){
   // Get the current page from the body class
   var bodyClasses = document.querySelector("body").classList;
-  var primaryClass = typeof(bodyClasses[0]) === 'string' ? bodyClasses[0] : false;
+  var primaryClass = typeof(bodyClasses[0]) == 'string' ? bodyClasses[0] : false;
 
   // Logic for account settings page
-  if(primaryClass === 'accountEdit'){
+  if(primaryClass == 'accountEdit'){
     app.loadAccountEditPage();
   }
 };
@@ -328,7 +332,7 @@ app.loadDataOnPage = function(){
 // Load the account edit page specifically
 app.loadAccountEditPage = function(){
   // Get the phone number from the current token, or log the user out if none is there
-  var phone = typeof(app.config.sessionToken.phone) === 'string' ? app.config.sessionToken.phone : false;
+  var phone = typeof(app.config.sessionToken.phone) == 'string' ? app.config.sessionToken.phone : false;
   if(phone){
     // Fetch the user data
     var queryStringObject = {
@@ -360,13 +364,24 @@ app.loadAccountEditPage = function(){
 
 };
 
+// Loop to renew token often
+app.tokenRenewalLoop = function(){
+  setInterval(function(){
+    app.renewToken(function(err){
+      if(!err){
+        console.log("Token renewed successfully @ "+Date.now());
+      }
+    });
+  },1000 * 60);
+};
+
 // Init (bootstrapping)
 app.init = function(){
 
   // Bind all form submissions
   app.bindForms();
 
-  // Bind the logout button
+  // Bind logout logout button
   app.bindLogoutButton();
 
   // Get the token from localstorage
