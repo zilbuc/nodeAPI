@@ -1,5 +1,5 @@
 /*
- * Primary file for the API
+ * 'use-strict' example
  *
  */
 
